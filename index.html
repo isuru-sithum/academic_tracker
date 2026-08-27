@@ -73,6 +73,86 @@ header{
 .btn-primary:hover{background:linear-gradient(135deg,#a78bff,#7d91ff)}
 .btn-ghost{background:rgba(255,255,255,.035);color:var(--text);border:1px solid var(--border)}
 
+
+/* Dashboard intro + live stats */
+.dashboard-intro{
+  min-height:184px;margin:0 0 16px;padding:30px 30px 28px;
+  border:1px solid rgba(255,255,255,.10);border-radius:24px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  background:
+    radial-gradient(circle at 91% 50%,rgba(108,116,255,.16),transparent 20%),
+    radial-gradient(circle at 68% 10%,rgba(155,124,255,.10),transparent 35%),
+    linear-gradient(135deg,rgba(91,62,155,.18),rgba(29,31,70,.58));
+  box-shadow:0 20px 55px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.025);
+}
+.dashboard-intro:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 0 58%,rgba(255,255,255,.018) 67%,transparent 78%);
+}
+.dashboard-copy{position:relative;z-index:2;max-width:760px}
+.dashboard-kicker{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;
+  margin-bottom:13px;background:rgba(75,231,166,.07);border:1px solid rgba(75,231,166,.07);
+  color:var(--teal);font-family:var(--font-mono);font-size:8.5px;letter-spacing:.11em;
+}
+.dashboard-kicker span{font-size:8px}
+.dashboard-intro h1{
+  margin:0 0 7px;font-family:var(--font-display);font-size:31px;line-height:1.1;
+  font-weight:780;letter-spacing:-.035em;color:#f7f8ff
+}
+.dashboard-intro p{
+  margin:0;max-width:700px;color:var(--text-dim);font-size:12px;line-height:1.6
+}
+.dashboard-orb{
+  width:155px;height:155px;flex:0 0 155px;border-radius:50%;position:relative;
+  background:
+    radial-gradient(circle at 38% 37%,rgba(255,255,255,.90) 0 2%,rgba(184,153,255,.80) 3%,rgba(119,100,235,.34) 13%,rgba(91,104,224,.13) 34%,transparent 68%);
+  box-shadow:inset 0 0 35px rgba(115,96,255,.12),0 0 35px rgba(113,93,255,.10);
+  opacity:.85
+}
+.dashboard-orb:before,.dashboard-orb:after{
+  content:"";position:absolute;inset:8px;border:1px solid rgba(137,126,255,.12);border-radius:50%;
+  transform:rotate(28deg) scaleY(.45)
+}
+.dashboard-orb:after{inset:21px;transform:rotate(-24deg) scaleY(.38);border-color:rgba(120,166,255,.11)}
+.dashboard-orb span{
+  position:absolute;width:7px;height:7px;border-radius:50%;left:39%;top:34%;
+  background:#ddd2ff;box-shadow:0 0 18px 5px rgba(160,130,255,.45)
+}
+.dashboard-stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px
+}
+.dashboard-stat{
+  min-height:114px;padding:17px 18px;border:1px solid var(--border);border-radius:17px;
+  background:rgba(15,19,32,.78);box-shadow:0 12px 34px rgba(0,0,0,.14);
+  transition:transform .18s,border-color .18s,background .18s
+}
+.dashboard-stat:hover{
+  transform:translateY(-2px);border-color:rgba(155,124,255,.22);background:rgba(20,25,42,.86)
+}
+.stat-label{
+  display:flex;justify-content:space-between;align-items:center;color:var(--text-dim);
+  font-size:10.5px;letter-spacing:.01em
+}
+.stat-icon{
+  width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+  color:var(--accent);background:rgba(125,105,255,.11);font-size:11px
+}
+.stat-value{
+  margin:9px 0 4px;font-size:25px;line-height:1;font-weight:800;letter-spacing:-.03em;color:#f6f7ff
+}
+.stat-note{font-size:9px;color:var(--teal);min-height:13px}
+@media(max-width:900px){
+  .dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .dashboard-intro{padding:22px;min-height:170px}
+  .dashboard-intro h1{font-size:26px}
+  .dashboard-orb{display:none}
+  .dashboard-stats{grid-template-columns:1fr 1fr;gap:9px}
+  .dashboard-stat{padding:14px;min-height:105px}
+}
+
 /* Main work grid */
 .works{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
 .work.span-2{grid-column:1/-1}
@@ -267,6 +347,40 @@ header{
       <button class="btn btn-primary" id="addWorkBtn">+ Add work</button>
     </div>
   </header>
+
+  <section class="dashboard-intro" aria-label="Academic dashboard overview">
+    <div class="dashboard-copy">
+      <div class="dashboard-kicker"><span>●</span> PERSONAL ACADEMIC COMMAND CENTER</div>
+      <h1 id="dashboardGreeting">Good evening, Isuru.</h1>
+      <p>Keep every course, topic, tracker and checklist in one calm workspace. Your existing data and sync system stay underneath this new interface.</p>
+    </div>
+    <div class="dashboard-orb" aria-hidden="true">
+      <span></span>
+    </div>
+  </section>
+
+  <section class="dashboard-stats" aria-label="Academic statistics">
+    <article class="dashboard-stat">
+      <div class="stat-label">Total work <span class="stat-icon">▦</span></div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-note" id="statTotalNote">0 items in your workspace</div>
+    </article>
+    <article class="dashboard-stat">
+      <div class="stat-label">Completed <span class="stat-icon">✓</span></div>
+      <div class="stat-value" id="statCompleted">0</div>
+      <div class="stat-note" id="statCompletedNote">0% completion rate</div>
+    </article>
+    <article class="dashboard-stat">
+      <div class="stat-label">In progress <span class="stat-icon">◷</span></div>
+      <div class="stat-value" id="statProgress">0</div>
+      <div class="stat-note" id="statProgressNote">Nothing currently in progress</div>
+    </article>
+    <article class="dashboard-stat">
+      <div class="stat-label">Study streak <span class="stat-icon">✦</span></div>
+      <div class="stat-value" id="statStreak">—</div>
+      <div class="stat-note" id="statStreakNote">Start updating your work</div>
+    </article>
+  </section>
 
   <div class="works" id="works"></div>
 </div>
@@ -548,6 +662,63 @@ header{
 
   function findWork(id){ return works.find(w=>w.id===id); }
 
+  // ---------------- dashboard overview ----------------
+  function updateDashboardStats(){
+    const total = works.length;
+    const completed = works.filter(isComplete).length;
+    const inProgress = total - completed;
+    const pct = total ? Math.round((completed / total) * 100) : 0;
+
+    const totalEl = document.getElementById('statTotal');
+    const completedEl = document.getElementById('statCompleted');
+    const progressEl = document.getElementById('statProgress');
+    const streakEl = document.getElementById('statStreak');
+    if(!totalEl) return;
+
+    totalEl.textContent = total;
+    completedEl.textContent = completed;
+    progressEl.textContent = inProgress;
+    document.getElementById('statTotalNote').textContent =
+      total === 1 ? '1 item in your workspace' : total + ' items in your workspace';
+    document.getElementById('statCompletedNote').textContent =
+      pct + '% completion rate';
+    document.getElementById('statProgressNote').textContent =
+      inProgress === 0 ? 'Everything is completed' :
+      inProgress === 1 ? '1 item still being worked on' :
+      inProgress + ' items still being worked on';
+
+    // A conservative "study streak": consecutive calendar days represented by
+    // existing updatedAt values. It never writes or changes stored data.
+    const days = new Set();
+    works.forEach(w=>{
+      if(w.updatedAt){
+        const d = new Date(w.updatedAt);
+        days.add(d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate());
+      }
+    });
+    let streak = 0;
+    const cursor = new Date();
+    cursor.setHours(0,0,0,0);
+    while(days.has(cursor.getFullYear()+'-'+cursor.getMonth()+'-'+cursor.getDate())){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    }
+    streakEl.textContent = streak ? streak + 'd' : '—';
+    document.getElementById('statStreakNote').textContent =
+      streak ? (streak === 1 ? '1 day of recent activity' : streak + ' consecutive days of activity')
+             : 'Start updating your work';
+  }
+
+  function updateDashboardGreeting(){
+    const el = document.getElementById('dashboardGreeting');
+    if(!el) return;
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    el.textContent = greeting + ', Isuru.';
+  }
+
+  updateDashboardGreeting();
+
   // ---------------- render ----------------
   function render(){
     worksEl.innerHTML = '';
@@ -559,9 +730,11 @@ header{
           <button class="btn btn-primary" id="emptyAddBtn">+ Add work</button>
         </div>`;
       document.getElementById('emptyAddBtn').onclick = openModal;
+      updateDashboardStats();
       return;
     }
     getDisplayOrder().forEach(work => worksEl.appendChild(renderWork(work)));
+    updateDashboardStats();
   }
 
   function isComplete(work){
