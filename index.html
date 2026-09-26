@@ -6,6 +6,7 @@
 <title>Folio — a record of your study</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{
   --bg:#080b14; --surface:rgba(18,23,38,.78); --surface-2:rgba(23,29,48,.68);
@@ -340,13 +341,18 @@ header{
     </div>
     <div class="header-right">
       <div class="save-status"><span class="save-dot" id="saveDot"></span><span id="saveText">saved</span></div>
-      <button class="btn btn-ghost" id="settingsBtn" title="GitHub sync settings">⚙ Sync</button>
+      <button class="btn btn-ghost" id="settingsBtn" title="Account settings">⚙ Account</button>
       <button class="btn btn-ghost" id="exportBtn" title="Download a backup file">Export</button>
       <button class="btn btn-ghost" id="importBtn" title="Restore from a backup file">Import</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
       <button class="btn btn-primary" id="addWorkBtn">+ Add work</button>
     </div>
   </header>
+
+  <div id="demoBanner" style="display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 16px;border:1px solid rgba(155,124,255,.3);background:rgba(155,124,255,.08);border-radius:12px;margin-bottom:16px;font-size:12.5px;color:var(--text-dim);">
+    <span>You're viewing a <b style="color:var(--text);">demo</b> with sample data — nothing here is saved.</span>
+    <button class="btn btn-primary" id="exitDemoBtn" style="padding:6px 14px;font-size:11.5px;">Sign in for your own tracker</button>
+  </div>
 
   <section class="dashboard-intro" aria-label="Academic dashboard overview">
     <div class="dashboard-copy">
@@ -387,47 +393,43 @@ header{
 
 <div class="overlay" id="connectOverlay">
   <div class="modal">
-    <h3>Connect to GitHub</h3>
-    <p style="font-size:12.5px;color:var(--text-dim);margin:-8px 0 18px;line-height:1.55;">
-      Folio stores your data in a private GitHub Gist, so it follows you across devices instead of staying stuck in one browser.
-      Create a <a href="https://github.com/settings/tokens/new?description=Folio&scopes=gist" target="_blank" rel="noopener" style="color:var(--accent);">Personal Access Token</a>
-      with only the <b style="color:var(--text);">gist</b> scope checked, then paste it below.
-    </p>
-    <div class="field">
-      <label>Personal Access Token</label>
-      <input id="ghTokenInput" type="password" placeholder="ghp_..." autocomplete="off">
+    <div id="signinStage">
+      <h3>Sign in</h3>
+      <p style="font-size:12.5px;color:var(--text-dim);margin:-8px 0 18px;line-height:1.55;">
+        Enter your email and I'll send a one-click sign-in link — no password, nothing to copy or remember. Your data follows you to any device you sign in on.
+      </p>
+      <div class="field">
+        <label>Email</label>
+        <input id="emailInput" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div id="connectError" style="display:none;color:var(--rose);font-size:12px;margin-bottom:12px;line-height:1.5;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="sendLinkBtn" style="width:100%;">Send sign-in link</button>
+      </div>
+      <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <button class="btn btn-ghost" id="demoBtn" style="width:100%;">View demo — no sign-in needed</button>
+      </div>
     </div>
-    <div class="field">
-      <label>Setup</label>
-      <select id="ghModeSelect">
-        <option value="new">Create a new gist (first device)</option>
-        <option value="existing">Connect to an existing gist (another device)</option>
-      </select>
-    </div>
-    <div class="field" id="ghGistField" style="display:none;">
-      <label>Gist ID</label>
-      <input id="ghGistInput" placeholder="paste the Gist ID from your other device" autocomplete="off">
-    </div>
-    <div id="connectError" style="display:none;color:var(--rose);font-size:12px;margin-bottom:12px;line-height:1.5;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" id="connectBtn" style="width:100%;">Connect</button>
+    <div id="checkEmailStage" style="display:none;text-align:center;padding:10px 0;">
+      <h3>Check your email</h3>
+      <p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;">
+        Sent a sign-in link to <b id="sentToEmail" style="color:var(--text);"></b>. Click it on this device to finish signing in.
+      </p>
+      <button class="btn btn-ghost" id="backToSigninBtn">Use a different email</button>
     </div>
   </div>
 </div>
 
 <div class="overlay" id="settingsOverlay">
   <div class="modal">
-    <h3>Sync settings</h3>
+    <h3>Account</h3>
     <div class="field">
-      <label>Gist ID — use this + your token to connect another device</label>
-      <input id="gistIdDisplay" readonly>
+      <label>Signed in as</label>
+      <input id="accountEmailDisplay" readonly>
     </div>
     <div class="modal-actions" style="justify-content:space-between;">
-      <button class="btn btn-ghost" id="disconnectBtn" style="color:var(--rose);">Disconnect this device</button>
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-ghost" id="copyGistBtn">Copy ID</button>
-        <button class="btn btn-primary" id="closeSettingsBtn">Done</button>
-      </div>
+      <button class="btn btn-ghost" id="disconnectBtn" style="color:var(--rose);">Sign out</button>
+      <button class="btn btn-primary" id="closeSettingsBtn">Done</button>
     </div>
   </div>
 </div>
@@ -480,12 +482,28 @@ header{
     return 'var(--accent)';
   }
 
-  const GH_TOKEN_KEY = 'folio-gh-token';
-  const GH_GIST_KEY = 'folio-gh-gistid';
+  // ---- fill these in after creating your Supabase project (see setup notes) ----
+  const SUPABASE_URL = 'https://uyyvbvjsqhxjuvwfdnxt.supabase.co/rest/v1/';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5eXZidmpzcWh4anV2d2Zkbnh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjYwODgsImV4cCI6MjEwNTk0MjA4OH0.Njv4YHUpHLZXaaIpNOo7Lp2uN8Bhpw0D2m6XTYwDU6k';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const CACHE_KEY = 'folio-cache';
-  const GIST_FILENAME = 'folio-data.json';
-  let ghToken = null;
-  let ghGistId = null;
+  const DEMO_KEY = 'folio-demo-mode';
+  let currentUser = null;
+  let isDemo = false;
+
+  const DEMO_WORKS = [
+    { id:'demo-1', category:'COURSE', title:'MIT 8.04 Quantum Physics I', subtitle:'Sample data — not really yours', primary:null,
+      trackers:[
+        { id:'d1a', name:'Videos', unit:'Video', completed:31, total:42, next:'Video 32', color:'teal' },
+        { id:'d1b', name:'Problem Sets', unit:'Set', completed:6, total:10, next:'Set 7', color:'accent' }
+      ], checklist:[], showChecklist:false, createdAt:Date.now(), updatedAt:Date.now() },
+    { id:'demo-2', category:'TEXTBOOK', title:'An Introduction to Thermal Physics', subtitle:'Daniel V. Schroeder', primary:{ unit:'Chapter', completed:3, total:10, currentLabel:'Chapter 4' },
+      trackers:[], checklist:[ { id:'d2a', text:'Read & understand', done:true }, { id:'d2b', text:'Solve problems', done:false } ],
+      showChecklist:true, createdAt:Date.now(), updatedAt:Date.now() },
+    { id:'demo-3', category:'NOVEL', title:'The Hard Way', subtitle:'Lee Child', primary:{ unit:'Chapter', completed:28, total:49, currentLabel:'Chapter 28' },
+      trackers:[], checklist:[], showChecklist:false, createdAt:Date.now(), updatedAt:Date.now() }
+  ];
 
   function timeNow(){
     const t = new Date();
@@ -501,102 +519,85 @@ header{
     saveText.textContent = text;
   }
 
-  async function ghRequest(url, options={}){
-    const res = await fetch(url, {
-      ...options,
-      headers: {
-        'Authorization': 'token ' + ghToken,
-        'Accept': 'application/vnd.github+json',
-        ...(options.headers || {})
-      }
-    });
-    if(!res.ok){
-      const body = await res.text().catch(()=>'');
-      throw new Error('GitHub API ' + res.status + ': ' + body.slice(0,200));
-    }
-    return res.json();
-  }
-
-  async function ghCreateGist(initialWorks){
-    const data = await ghRequest('https://api.github.com/gists', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        description: 'Folio academic tracker data',
-        public: false,
-        files: { [GIST_FILENAME]: { content: JSON.stringify(initialWorks, null, 2) } }
-      })
-    });
-    return data.id;
-  }
-
-  async function ghGetGist(gistId){
-    const data = await ghRequest('https://api.github.com/gists/' + gistId);
-    const file = data.files && data.files[GIST_FILENAME];
-    if(!file) throw new Error('That gist has no ' + GIST_FILENAME + ' file.');
-    let content = file.content;
-    if(file.truncated){
-      const rawRes = await fetch(file.raw_url);
-      content = await rawRes.text();
-    }
-    return JSON.parse(content || '[]');
-  }
-
-  async function ghUpdateGist(gistId, worksData){
-    await ghRequest('https://api.github.com/gists/' + gistId, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        files: { [GIST_FILENAME]: { content: JSON.stringify(worksData, null, 2) } }
-      })
-    });
-  }
-
-  function loadCredentials(){
-    ghToken = localStorage.getItem(GH_TOKEN_KEY) || null;
-    ghGistId = localStorage.getItem(GH_GIST_KEY) || null;
-  }
-
-  function saveCredentials(token, gistId){
-    ghToken = token; ghGistId = gistId;
-    localStorage.setItem(GH_TOKEN_KEY, token);
-    localStorage.setItem(GH_GIST_KEY, gistId);
-  }
-
-  function clearCredentials(){
-    ghToken = null; ghGistId = null;
-    localStorage.removeItem(GH_TOKEN_KEY);
-    localStorage.removeItem(GH_GIST_KEY);
-  }
-
   function showConnectModal(errorMsg){
     document.getElementById('connectOverlay').classList.add('open');
+    document.getElementById('signinStage').style.display = 'block';
+    document.getElementById('checkEmailStage').style.display = 'none';
     const errEl = document.getElementById('connectError');
     if(errorMsg){ errEl.textContent = errorMsg; errEl.style.display = 'block'; }
     else { errEl.style.display = 'none'; }
   }
 
+  function hideConnectModal(){
+    document.getElementById('connectOverlay').classList.remove('open');
+  }
+
+  function enterDemoMode(){
+    isDemo = true;
+    sessionStorage.setItem(DEMO_KEY, '1');
+    works = JSON.parse(JSON.stringify(DEMO_WORKS));
+    document.getElementById('demoBanner').style.display = 'flex';
+    hideConnectModal();
+    setSyncStatus('demo — not saved', false);
+    render();
+  }
+
+  function exitDemoMode(){
+    isDemo = false;
+    sessionStorage.removeItem(DEMO_KEY);
+    document.getElementById('demoBanner').style.display = 'none';
+    works = [];
+    render();
+    showConnectModal();
+  }
+
+  async function loadUserData(){
+    const { data, error } = await sb.from('folio_data').select('data').eq('user_id', currentUser.id).maybeSingle();
+    if(error) throw error;
+    if(!data){
+      await sb.from('folio_data').insert({ user_id: currentUser.id, data: [] });
+      return [];
+    }
+    return data.data || [];
+  }
+
   async function init(){
-    loadCredentials();
-    if(!ghToken || !ghGistId){
-      // show any cached copy immediately while waiting to connect, so nothing looks lost
+    if(sessionStorage.getItem(DEMO_KEY) === '1'){
+      enterDemoMode();
+      return;
+    }
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+      currentUser = session.user;
+      await syncFromSupabase(true);
+    } else {
       try{
         const cached = localStorage.getItem(CACHE_KEY);
         if(cached) works = JSON.parse(cached);
       }catch(e){}
       render();
-      setSyncStatus('not connected', true);
+      setSyncStatus('not signed in', true);
       showConnectModal();
-      return;
     }
-    await syncFromGitHub(true);
   }
 
-  async function syncFromGitHub(initial){
+  sb.auth.onAuthStateChange(async (event, session)=>{
+    if(event === 'SIGNED_IN' && session && session.user){
+      currentUser = session.user;
+      hideConnectModal();
+      await syncFromSupabase(true);
+    } else if(event === 'SIGNED_OUT'){
+      currentUser = null;
+      works = [];
+      render();
+    }
+  });
+
+  async function syncFromSupabase(initial){
     setSyncStatus('connecting…', false);
     saveDot.classList.add('saving');
     try{
-      works = await ghGetGist(ghGistId);
+      works = await loadUserData();
       localStorage.setItem(CACHE_KEY, JSON.stringify(works));
       setSyncStatus('synced · ' + timeNow(), false);
       render();
@@ -608,12 +609,13 @@ header{
         setSyncStatus('offline — showing last synced copy', true);
       } else {
         setSyncStatus('connection failed', true);
-        if(initial) showConnectModal('Could not load that gist. Check your token and Gist ID, then try again from Settings.');
+        if(initial) showConnectModal('Could not load your data. Check your connection and try again.');
       }
     }
   }
 
   function scheduleSave(){
+    if(isDemo){ setSyncStatus('demo — not saved', false); return; }
     saveDot.classList.add('saving');
     saveText.textContent = 'syncing…';
     clearTimeout(saveTimer);
@@ -621,10 +623,11 @@ header{
   }
 
   async function doSave(){
+    if(isDemo) return;
     try{ localStorage.setItem(CACHE_KEY, JSON.stringify(works)); }catch(e){}
-    if(!ghToken || !ghGistId){ setSyncStatus('not connected', true); return; }
+    if(!currentUser){ setSyncStatus('not signed in', true); return; }
     try{
-      await ghUpdateGist(ghGistId, works);
+      await sb.from('folio_data').upsert({ user_id: currentUser.id, data: works, updated_at: new Date().toISOString() });
       setSyncStatus('synced · ' + timeNow(), false);
     }catch(e){
       setSyncStatus('sync failed — will retry on next change', true);
@@ -714,13 +717,14 @@ header{
     if(!el) return;
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    el.textContent = greeting + ', Isuru.';
+    el.textContent = isDemo ? greeting + ' — here\'s a sample workspace.' : greeting + ', Isuru.';
   }
 
   updateDashboardGreeting();
 
   // ---------------- render ----------------
   function render(){
+    updateDashboardGreeting();
     worksEl.innerHTML = '';
     if(works.length===0){
       worksEl.innerHTML = `
@@ -1089,50 +1093,43 @@ header{
     e.target.value = '';
   });
 
-  // ---------------- GitHub connect / settings ----------------
-  document.getElementById('ghModeSelect').addEventListener('change', e=>{
-    document.getElementById('ghGistField').style.display = e.target.value === 'existing' ? 'block' : 'none';
-  });
-
-  document.getElementById('connectBtn').addEventListener('click', async ()=>{
-    const token = document.getElementById('ghTokenInput').value.trim();
-    const mode = document.getElementById('ghModeSelect').value;
-    const gistIdInput = document.getElementById('ghGistInput').value.trim();
+  // ---------------- Supabase sign-in / demo / account ----------------
+  document.getElementById('sendLinkBtn').addEventListener('click', async ()=>{
+    const email = document.getElementById('emailInput').value.trim();
     const errEl = document.getElementById('connectError');
     errEl.style.display = 'none';
-    if(!token){ errEl.textContent = 'Enter a token.'; errEl.style.display = 'block'; return; }
-    if(mode === 'existing' && !gistIdInput){ errEl.textContent = 'Enter the Gist ID from your other device.'; errEl.style.display = 'block'; return; }
+    if(!email || !email.includes('@')){ errEl.textContent = 'Enter a valid email.'; errEl.style.display = 'block'; return; }
 
-    const btn = document.getElementById('connectBtn');
-    btn.disabled = true; btn.textContent = 'Connecting…';
-    ghToken = token;
+    const btn = document.getElementById('sendLinkBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
     try{
-      let gistId, data;
-      if(mode === 'new'){
-        gistId = await ghCreateGist([]);
-        data = [];
-      } else {
-        gistId = gistIdInput;
-        data = await ghGetGist(gistId);
-      }
-      saveCredentials(token, gistId);
-      works = data;
-      localStorage.setItem(CACHE_KEY, JSON.stringify(works));
-      document.getElementById('connectOverlay').classList.remove('open');
-      document.getElementById('ghTokenInput').value = '';
-      setSyncStatus('synced · ' + timeNow(), false);
-      render();
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.href }
+      });
+      if(error) throw error;
+      document.getElementById('sentToEmail').textContent = email;
+      document.getElementById('signinStage').style.display = 'none';
+      document.getElementById('checkEmailStage').style.display = 'block';
     }catch(e){
-      ghToken = null;
-      errEl.textContent = 'Could not connect — check your token' + (mode === 'existing' ? ' and Gist ID.' : ', then try again.');
+      errEl.textContent = 'Could not send the link — check the email and try again.';
       errEl.style.display = 'block';
     }
-    btn.disabled = false; btn.textContent = 'Connect';
+    btn.disabled = false; btn.textContent = 'Send sign-in link';
   });
 
+  document.getElementById('backToSigninBtn').addEventListener('click', ()=>{
+    document.getElementById('signinStage').style.display = 'block';
+    document.getElementById('checkEmailStage').style.display = 'none';
+  });
+
+  document.getElementById('demoBtn').addEventListener('click', enterDemoMode);
+  document.getElementById('exitDemoBtn').addEventListener('click', exitDemoMode);
+
   document.getElementById('settingsBtn').addEventListener('click', ()=>{
-    if(!ghGistId){ showConnectModal(); return; }
-    document.getElementById('gistIdDisplay').value = ghGistId;
+    if(isDemo){ exitDemoMode(); return; }
+    if(!currentUser){ showConnectModal(); return; }
+    document.getElementById('accountEmailDisplay').value = currentUser.email || '';
     document.getElementById('settingsOverlay').classList.add('open');
   });
   document.getElementById('closeSettingsBtn').addEventListener('click', ()=>{
@@ -1141,22 +1138,13 @@ header{
   document.getElementById('settingsOverlay').addEventListener('click', e=>{
     if(e.target.id === 'settingsOverlay') document.getElementById('settingsOverlay').classList.remove('open');
   });
-  document.getElementById('copyGistBtn').addEventListener('click', ()=>{
-    const el = document.getElementById('gistIdDisplay');
-    el.select();
-    navigator.clipboard?.writeText(el.value).catch(()=>{});
-    const btn = document.getElementById('copyGistBtn');
-    const orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(()=>{ btn.textContent = orig; }, 1200);
-  });
-  document.getElementById('disconnectBtn').addEventListener('click', ()=>{
-    if(!confirm('Disconnect GitHub sync on this device? Your data stays safe in the gist — reconnect anytime with your token and this Gist ID.')) return;
-    clearCredentials();
+  document.getElementById('disconnectBtn').addEventListener('click', async ()=>{
+    if(!confirm('Sign out on this device? Your data stays safe in your account — sign back in anytime with your email.')) return;
+    await sb.auth.signOut();
     works = [];
     document.getElementById('settingsOverlay').classList.remove('open');
     render();
-    setSyncStatus('not connected', true);
+    setSyncStatus('not signed in', true);
     showConnectModal();
   });
 
