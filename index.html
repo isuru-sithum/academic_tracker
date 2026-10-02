@@ -4,17 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Folio — a record of your study</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%93</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-:root{
-  --bg:#080b14; --surface:rgba(18,23,38,.78); --surface-2:rgba(23,29,48,.68);
-  --surface-3:rgba(30,37,60,.82); --border:rgba(255,255,255,.09);
-  --border-soft:rgba(255,255,255,.06); --text:#f5f7ff; --text-dim:#aab2c7;
-  --text-faint:#727c96; --accent:#9b7cff; --accent-2:#5e9cff;
-  --teal:#5fe0a2; --rose:#ff7da9; --indigo:#8d9cff;
-  --font-display:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;
+  :root{
+  --bg:#f4eddc; --surface:#fdfaf1; --surface-2:#f6efe0; --surface-3:#ece0c8;
+  --border:rgba(44,34,18,.22); --border-soft:rgba(44,34,18,.11);
+  --text:#26200f; --text-dim:#6f6046; --text-faint:#a18e6c;
+  --accent:#c8451f; --accent-2:#e39a36;
+  --teal:#1a6b52; --rose:#b03a49; --indigo:#31519c;
+  --ink:#26200f; --paper:#fdfaf1;
+  --font-display:"Fraunces",Georgia,"Times New Roman",serif;
   --font-body:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;
   --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
 }
@@ -23,295 +24,345 @@ html,body{margin:0;padding:0}
 body{
   min-height:100vh;color:var(--text);font-family:var(--font-body);
   background:
-    radial-gradient(circle at 82% 0%,rgba(123,91,255,.18),transparent 31%),
-    radial-gradient(circle at 4% 88%,rgba(45,171,255,.10),transparent 28%),
+    radial-gradient(circle at 88% -10%,rgba(227,154,54,.20),transparent 42%),
+    radial-gradient(circle at -6% 108%,rgba(26,107,82,.07),transparent 40%),
     var(--bg);
   -webkit-font-smoothing:antialiased;
 }
 body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;opacity:.42;
-  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
-  background-size:44px 44px;
-  mask-image:linear-gradient(to bottom,#000,transparent 88%);
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.6;
+  background-image:radial-gradient(rgba(44,34,18,.14) 1px,transparent 1.4px);
+  background-size:26px 26px;
+  -webkit-mask-image:linear-gradient(to bottom,#000,transparent 90%);
+  mask-image:linear-gradient(to bottom,#000,transparent 90%);
 }
-.wrap{max-width:1380px;margin:0 auto;padding:28px 34px 70px}
+body:after{
+  content:"";position:fixed;top:0;left:0;right:0;height:5px;z-index:70;pointer-events:none;
+  background:linear-gradient(90deg,var(--accent) 0 60%,var(--accent-2) 60% 82%,var(--teal) 82% 100%);
+}
+.wrap{max-width:1380px;margin:0 auto;padding:30px 34px 70px}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{color:#a33a18}
 
 /* Header */
 header{
   display:flex;align-items:center;justify-content:space-between;gap:18px;
-  margin-bottom:22px;flex-wrap:wrap;
+  margin-bottom:24px;flex-wrap:wrap;
 }
-.brand{display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:13px}
 .brand-mark{
-  width:40px;height:40px;border:0;border-radius:13px;display:flex;
+  width:42px;height:42px;border:1.5px solid var(--ink);border-radius:11px;display:flex;
   align-items:center;justify-content:center;position:relative;flex-shrink:0;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  box-shadow:0 10px 32px rgba(125,100,255,.28);
+  background:var(--accent);transform:rotate(-4deg);
+  box-shadow:3px 3px 0 rgba(38,29,15,.25);
 }
-.brand-mark:before{content:"F";font-size:17px;font-weight:900;color:white}
+.brand-mark:before{content:"F";font-family:var(--font-display);font-style:italic;font-size:21px;font-weight:600;color:#fdfaf1}
 .brand-mark:after{display:none}
-.brand-name{font-size:17px;letter-spacing:.08em;font-weight:800}
-.brand-tag{font-size:10px;color:var(--text-faint);font-family:var(--font-mono);margin-top:3px}
+.brand-name{font-family:var(--font-mono);font-size:14px;letter-spacing:.3em;font-weight:600;color:var(--ink)}
+.brand-tag{font-family:var(--font-mono);font-size:9.5px;color:var(--text-faint);margin-top:3px;letter-spacing:.06em}
 .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .save-status{
   font-family:var(--font-mono);font-size:10px;color:var(--text-dim);
-  display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--border);
-  border-radius:999px;background:rgba(255,255,255,.025)
+  display:flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--border);
+  border-radius:999px;background:var(--paper)
 }
-.save-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);transition:background .3s}
-.save-dot.saving{background:var(--accent)}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);transition:background .3s;box-shadow:0 0 0 2px rgba(26,107,82,.18)}
+.save-dot.saving{background:var(--accent);box-shadow:0 0 0 2px rgba(200,69,31,.18)}
 .btn{
-  font-family:var(--font-body);font-size:12px;font-weight:650;border-radius:10px;
-  padding:9px 13px;cursor:pointer;border:1px solid var(--border);
-  transition:all .15s ease;letter-spacing:.01em;background:rgba(255,255,255,.035);color:#dfe5f4
+  font-family:var(--font-body);font-size:12px;font-weight:650;border-radius:9px;
+  padding:9px 14px;cursor:pointer;border:1px solid var(--border);
+  transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease;
+  letter-spacing:.01em;background:var(--paper);color:var(--text);
+  box-shadow:2px 2px 0 rgba(38,29,15,.12)
 }
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(38,29,15,.18);border-color:rgba(44,34,18,.45)}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(38,29,15,.15)}
 .btn-primary{
-  border:0;background:linear-gradient(135deg,var(--accent),#7186ff);
-  color:white;box-shadow:0 9px 28px rgba(124,103,255,.25)
+  border:1px solid var(--ink);background:var(--accent);color:#fdfaf1;
+  box-shadow:3px 3px 0 rgba(38,29,15,.85)
 }
-.btn-primary:hover,.btn-ghost:hover{transform:translateY(-1px);background:var(--surface-3)}
-.btn-primary:hover{background:linear-gradient(135deg,#a78bff,#7d91ff)}
-.btn-ghost{background:rgba(255,255,255,.035);color:var(--text);border:1px solid var(--border)}
-
+.btn-primary:hover{transform:translate(-1px,-1px);background:#b13a17;border-color:var(--ink);box-shadow:5px 5px 0 rgba(38,29,15,.9)}
+.btn-primary:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(38,29,15,.5)}
+.btn-ghost{background:var(--paper);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface-3);border-color:rgba(44,34,18,.45)}
 
 /* Dashboard intro + live stats */
 .dashboard-intro{
-  min-height:184px;margin:0 0 16px;padding:30px 30px 28px;
-  border:1px solid rgba(255,255,255,.10);border-radius:24px;position:relative;overflow:hidden;
+  min-height:190px;margin:0 0 16px;padding:32px 36px 30px;
+  border:1px solid var(--ink);border-radius:22px;position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:space-between;gap:24px;
   background:
-    radial-gradient(circle at 91% 50%,rgba(108,116,255,.16),transparent 20%),
-    radial-gradient(circle at 68% 10%,rgba(155,124,255,.10),transparent 35%),
-    linear-gradient(135deg,rgba(91,62,155,.18),rgba(29,31,70,.58));
-  box-shadow:0 20px 55px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.025);
+    repeating-linear-gradient(115deg,rgba(253,250,241,.03) 0 1px,transparent 1px 9px),
+    linear-gradient(118deg,#26200f 0%,#33270f 55%,#453213 100%);
+  box-shadow:7px 7px 0 rgba(38,29,15,.22);
 }
 .dashboard-intro:before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(115deg,transparent 0 58%,rgba(255,255,255,.018) 67%,transparent 78%);
+  content:"folio";position:absolute;left:-8px;bottom:-34px;
+  font-family:var(--font-display);font-style:italic;font-weight:600;font-size:120px;
+  color:rgba(253,250,241,.05);pointer-events:none;letter-spacing:-.04em;
 }
-.dashboard-copy{position:relative;z-index:2;max-width:760px}
+.dashboard-intro:after{
+  content:"";position:absolute;inset:9px;border:1px dashed rgba(253,250,241,.16);
+  border-radius:14px;pointer-events:none;
+}
+.dashboard-copy{position:relative;z-index:2;max-width:720px}
 .dashboard-kicker{
-  display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;
-  margin-bottom:13px;background:rgba(75,231,166,.07);border:1px solid rgba(75,231,166,.07);
-  color:var(--teal);font-family:var(--font-mono);font-size:8.5px;letter-spacing:.11em;
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;
+  margin-bottom:15px;background:var(--accent);border:1px solid rgba(253,250,241,.28);
+  color:#fdf6ec;font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;
+  box-shadow:2px 2px 0 rgba(0,0,0,.3)
 }
 .dashboard-kicker span{font-size:8px}
 .dashboard-intro h1{
-  margin:0 0 7px;font-family:var(--font-display);font-size:31px;line-height:1.1;
-  font-weight:780;letter-spacing:-.035em;color:#f7f8ff
+  margin:0 0 9px;font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:37px;line-height:1.06;letter-spacing:-.02em;color:#fbf4e4
 }
 .dashboard-intro p{
-  margin:0;max-width:700px;color:var(--text-dim);font-size:12px;line-height:1.6
+  margin:0;max-width:620px;color:rgba(251,244,228,.68);font-size:12.5px;line-height:1.65
 }
 .dashboard-orb{
-  width:155px;height:155px;flex:0 0 155px;border-radius:50%;position:relative;
-  background:
-    radial-gradient(circle at 38% 37%,rgba(255,255,255,.90) 0 2%,rgba(184,153,255,.80) 3%,rgba(119,100,235,.34) 13%,rgba(91,104,224,.13) 34%,transparent 68%);
-  box-shadow:inset 0 0 35px rgba(115,96,255,.12),0 0 35px rgba(113,93,255,.10);
-  opacity:.85
+  width:150px;height:150px;flex:0 0 150px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 50% 40%,#f2bd60 0 34%,var(--accent-2) 35% 60%,var(--accent) 61% 100%);
+  box-shadow:0 0 0 9px rgba(227,154,54,.15),0 0 0 19px rgba(200,69,31,.09)
 }
-.dashboard-orb:before,.dashboard-orb:after{
-  content:"";position:absolute;inset:8px;border:1px solid rgba(137,126,255,.12);border-radius:50%;
-  transform:rotate(28deg) scaleY(.45)
-}
-.dashboard-orb:after{inset:21px;transform:rotate(-24deg) scaleY(.38);border-color:rgba(120,166,255,.11)}
+.dashboard-orb:before{content:"";position:absolute;inset:-24px;border:1px dashed rgba(227,154,54,.5);border-radius:50%}
+.dashboard-orb:after{content:"";position:absolute;inset:16px;border:1px solid rgba(38,29,15,.22);border-radius:50%}
 .dashboard-orb span{
-  position:absolute;width:7px;height:7px;border-radius:50%;left:39%;top:34%;
-  background:#ddd2ff;box-shadow:0 0 18px 5px rgba(160,130,255,.45)
+  position:absolute;width:12px;height:12px;border-radius:50%;left:31%;top:25%;
+  background:#26200f;box-shadow:0 0 0 3px rgba(253,250,241,.4)
 }
 .dashboard-stats{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px
 }
 .dashboard-stat{
-  min-height:114px;padding:17px 18px;border:1px solid var(--border);border-radius:17px;
-  background:rgba(15,19,32,.78);box-shadow:0 12px 34px rgba(0,0,0,.14);
-  transition:transform .18s,border-color .18s,background .18s
+  min-height:116px;padding:18px 19px;border:1px solid var(--border);border-radius:15px;
+  background:var(--paper);position:relative;
+  box-shadow:3px 3px 0 rgba(38,29,15,.10);
+  transition:transform .18s,box-shadow .18s
 }
+.dashboard-stat:nth-child(1){border-top:3px solid var(--accent)}
+.dashboard-stat:nth-child(2){border-top:3px solid var(--teal)}
+.dashboard-stat:nth-child(3){border-top:3px solid #c98a1f}
+.dashboard-stat:nth-child(4){border-top:3px solid var(--indigo)}
 .dashboard-stat:hover{
-  transform:translateY(-2px);border-color:rgba(155,124,255,.22);background:rgba(20,25,42,.86)
+  transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(38,29,15,.14)
 }
 .stat-label{
   display:flex;justify-content:space-between;align-items:center;color:var(--text-dim);
-  font-size:10.5px;letter-spacing:.01em
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600
 }
 .stat-icon{
   width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
-  color:var(--accent);background:rgba(125,105,255,.11);font-size:11px
+  color:var(--accent);background:rgba(200,69,31,.10);font-size:11px;
+  border:1px solid rgba(200,69,31,.30)
 }
+.dashboard-stat:nth-child(2) .stat-icon{color:var(--teal);background:rgba(26,107,82,.10);border-color:rgba(26,107,82,.30)}
+.dashboard-stat:nth-child(3) .stat-icon{color:#a4711a;background:rgba(227,154,54,.18);border-color:rgba(201,138,31,.45)}
+.dashboard-stat:nth-child(4) .stat-icon{color:var(--indigo);background:rgba(49,81,156,.10);border-color:rgba(49,81,156,.30)}
 .stat-value{
-  margin:9px 0 4px;font-size:25px;line-height:1;font-weight:800;letter-spacing:-.03em;color:#f6f7ff
+  margin:11px 0 6px;font-family:var(--font-display);font-size:31px;line-height:1;
+  font-weight:600;letter-spacing:-.02em;color:var(--ink)
 }
-.stat-note{font-size:9px;color:var(--teal);min-height:13px}
+.stat-note{font-family:var(--font-mono);font-size:9px;color:var(--text-faint);min-height:13px}
 @media(max-width:900px){
   .dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:620px){
-  .dashboard-intro{padding:22px;min-height:170px}
-  .dashboard-intro h1{font-size:26px}
+  .dashboard-intro{padding:24px;min-height:172px}
+  .dashboard-intro h1{font-size:29px}
+  .dashboard-intro:before{font-size:80px}
   .dashboard-orb{display:none}
-  .dashboard-stats{grid-template-columns:1fr 1fr;gap:9px}
-  .dashboard-stat{padding:14px;min-height:105px}
+  .dashboard-stats{grid-template-columns:1fr 1fr;gap:10px}
+  .dashboard-stat{padding:15px;min-height:106px}
 }
 
 /* Main work grid */
-.works{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.works{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
 .work.span-2{grid-column:1/-1}
 .work{
-  background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  padding:20px;position:relative;backdrop-filter:blur(18px);
-  box-shadow:0 16px 45px rgba(0,0,0,.18);
+  background:var(--paper);border:1px solid var(--border);border-radius:18px;
+  padding:22px;position:relative;
+  box-shadow:4px 4px 0 rgba(38,29,15,.10);
   overflow:visible;transition:border-color .2s,transform .2s,box-shadow .2s
 }
-.work:hover{border-color:rgba(155,124,255,.24);box-shadow:0 20px 55px rgba(0,0,0,.24)}
-.work-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:15px}
+.work:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 rgba(38,29,15,.15);border-color:rgba(44,34,18,.38)}
+.work-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .work-heading{min-width:0;flex:1}
 .eyebrow{
-  font-family:var(--font-mono);font-size:9.5px;letter-spacing:.13em;
-  color:var(--accent);text-transform:uppercase;margin-bottom:7px;outline:none;cursor:text;display:inline-block
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;
+  color:var(--accent);text-transform:uppercase;margin-bottom:9px;outline:none;cursor:text;display:inline-block;
+  padding:3px 8px;border:1px solid rgba(200,69,31,.35);border-radius:5px;background:rgba(200,69,31,.07)
 }
-.eyebrow:focus{color:#c4b4ff}
+.eyebrow:focus{border-style:dashed;border-color:var(--accent);color:#a33a18;background:rgba(200,69,31,.04)}
 .work-title{
-  font-family:var(--font-display);font-style:normal;font-weight:750;font-size:19px;
-  color:var(--text);outline:none;cursor:text;line-height:1.3;letter-spacing:-.02em
+  font-family:var(--font-display);font-style:normal;font-weight:600;font-size:21px;
+  color:var(--ink);outline:none;cursor:text;line-height:1.28;letter-spacing:-.01em
 }
 .work-title:focus{border-bottom:1px dashed var(--text-faint)}
-.work-subtitle{font-size:11.5px;color:var(--text-dim);margin-top:4px;outline:none;cursor:text}
+.work-subtitle{font-size:11.5px;color:var(--text-dim);margin-top:5px;outline:none;cursor:text}
 .empty-hint{color:var(--text-faint);font-style:italic}
 .work-controls{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .icon-btn{
   width:28px;height:28px;border-radius:8px;border:1px solid var(--border);
-  background:rgba(255,255,255,.035);color:var(--text-dim);display:flex;align-items:center;
-  justify-content:center;cursor:pointer;font-size:11px;position:relative
+  background:var(--paper);color:var(--text-dim);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:11px;position:relative;
+  transition:all .15s ease
 }
-.icon-btn:hover{color:var(--text);background:var(--surface-3)}
+.icon-btn:hover{color:var(--ink);background:var(--surface-3);border-color:rgba(44,34,18,.45);box-shadow:2px 2px 0 rgba(38,29,15,.12)}
+.icon-btn:active{transform:translate(1px,1px);box-shadow:none}
 .menu{
-  position:absolute;top:34px;right:0;background:var(--surface-3);
-  border:1px solid var(--border);border-radius:10px;overflow:hidden;min-width:130px;
-  z-index:50;box-shadow:0 14px 35px rgba(0,0,0,.45);display:none
+  position:absolute;top:34px;right:0;background:var(--paper);
+  border:1px solid rgba(44,34,18,.4);border-radius:10px;overflow:hidden;min-width:130px;
+  z-index:50;box-shadow:5px 5px 0 rgba(38,29,15,.2);display:none
 }
 .menu.open{display:block}
 .menu button{
   display:block;width:100%;text-align:left;background:none;border:none;color:var(--text-dim);
   font-size:12px;padding:10px 13px;cursor:pointer;font-family:var(--font-body)
 }
-.menu button:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.menu button:hover{background:rgba(44,34,18,.06);color:var(--ink)}
 .menu button.danger:hover{color:var(--rose)}
 
 /* Progress */
-.primary{margin-bottom:14px}
-.primary-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:10px;flex-wrap:wrap}
+.primary{margin-bottom:15px}
+.primary-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:10px;flex-wrap:wrap}
 .primary-label{font-size:11.5px;color:var(--text-dim)}
-.primary-label b{color:var(--text);font-weight:650}
+.primary-label b{color:var(--ink);font-weight:650}
 .primary-label input{
-  background:none;border:none;color:var(--text);font-weight:650;font-family:var(--font-body);
+  background:none;border:none;color:var(--ink);font-weight:650;font-family:var(--font-body);
   font-size:12px;outline:none;border-bottom:1px dashed var(--text-faint);width:85px
 }
 .primary-remaining{font-family:var(--font-mono);font-size:9.5px;color:var(--text-dim);white-space:nowrap}
-.bar-track{height:7px;border-radius:999px;background:rgba(255,255,255,.065);overflow:hidden;position:relative}
+.bar-track{height:8px;border-radius:999px;background:rgba(44,34,18,.13);overflow:hidden;position:relative}
 .bar-fill{
-  height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#6e9bff);
-  transition:width .4s ease;box-shadow:0 0 14px rgba(142,116,255,.25)
+  height:100%;border-radius:999px;background:var(--accent);
+  transition:width .4s ease;position:relative
 }
-.primary-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.bar-fill:after{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  background:repeating-linear-gradient(-55deg,rgba(255,255,255,.20) 0 5px,rgba(255,255,255,0) 5px 10px)
+}
+.primary-foot{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
 .primary-foot span{font-family:var(--font-mono);font-size:9.5px;color:var(--text-dim)}
 .primary-foot .done-btn{margin-left:auto}
 
 /* Trackers */
-.trackers{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.trackers{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px;margin-bottom:11px}
 .tracker{
-  background:var(--surface-2);border:1px solid var(--border-soft);border-radius:13px;
-  padding:12px;position:relative
+  background:var(--surface-2);border:1px solid var(--border-soft);border-radius:14px;
+  padding:13px;position:relative;transition:border-color .15s,background .15s
 }
-.tracker .del{position:absolute;top:7px;right:9px;color:var(--text-faint);font-size:10px;cursor:pointer;opacity:0;transition:opacity .15s}
+.tracker:hover{border-color:rgba(44,34,18,.28);background:#faf4e6}
+.tracker .del{position:absolute;top:8px;right:10px;color:var(--text-faint);font-size:10px;cursor:pointer;opacity:0;transition:opacity .15s}
 .tracker:hover .del{opacity:1}
-.tracker-head{display:flex;align-items:center;gap:6px;margin-bottom:8px}
-.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.tracker .del:hover{color:var(--rose)}
+.tracker-head{display:flex;align-items:center;gap:6px;margin-bottom:9px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(253,250,241,.9),0 0 0 3px rgba(44,34,18,.15)}
 .tracker-name{
   font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--text-dim);outline:none;cursor:text;flex:1
 }
 .tracker-pct{font-family:var(--font-mono);font-size:9.5px;color:var(--text-dim)}
-.tracker-next{font-size:12px;color:var(--text);margin-bottom:3px;outline:none;cursor:text;font-weight:600}
-.tracker-sub{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);margin-bottom:7px}
-.tracker .bar-track{height:5px;margin-bottom:8px}
+.tracker-next{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:13px;color:var(--ink);margin-bottom:4px;outline:none;cursor:text}
+.tracker-sub{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);margin-bottom:8px}
+.tracker .bar-track{height:5px;margin-bottom:9px}
 .tracker-foot{display:flex;align-items:center;justify-content:flex-end}
 .mini-btn{
-  font-family:var(--font-body);font-size:10px;font-weight:700;padding:6px 10px;
-  border-radius:999px;border:none;cursor:pointer;background:var(--text);color:#080b14
+  font-family:var(--font-body);font-size:10px;font-weight:700;padding:6px 11px;
+  border-radius:999px;border:1px solid var(--ink);cursor:pointer;background:var(--ink);color:#f6efdd;
+  box-shadow:2px 2px 0 rgba(38,29,15,.28);
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease,color .12s ease
 }
-.mini-btn:hover{background:#fff}
-.mini-btn:disabled{background:var(--surface-3);color:var(--text-faint);cursor:default}
-.mini-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
-.mini-btn.ghost:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.mini-btn:not(:disabled):hover{background:var(--accent);color:#fff;transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(38,29,15,.32)}
+.mini-btn:not(:disabled):active{transform:translate(1px,1px);box-shadow:none}
+.mini-btn:disabled{background:var(--surface-3);color:var(--text-faint);cursor:default;box-shadow:none;border-color:var(--border);transform:none}
+.mini-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim);box-shadow:none}
+.mini-btn.ghost:not(:disabled):hover{color:var(--ink);border-color:rgba(44,34,18,.45);background:rgba(44,34,18,.05);transform:none;box-shadow:none}
 .add-tracker{
-  border:1px dashed var(--border);border-radius:13px;display:flex;align-items:center;
-  justify-content:center;color:var(--text-dim);font-size:11px;cursor:pointer;min-height:48px
+  border:1px dashed rgba(44,34,18,.3);border-radius:14px;display:flex;align-items:center;
+  justify-content:center;color:var(--text-dim);font-size:11px;cursor:pointer;min-height:48px;
+  transition:all .15s ease
 }
+.add-tracker:hover{color:var(--accent);border-color:rgba(200,69,31,.55);background:rgba(200,69,31,.05)}
 
 /* Checklist */
 .checklist{display:flex;flex-direction:column;gap:7px;margin-top:6px}
 .check-row{
   display:flex;align-items:center;gap:9px;background:var(--surface-2);
-  border:1px solid var(--border-soft);border-radius:11px;padding:8px 10px;position:relative
+  border:1px solid var(--border-soft);border-radius:11px;padding:9px 11px;position:relative;
+  transition:border-color .15s
 }
+.check-row:hover{border-color:rgba(44,34,18,.25)}
 .check-row .del{color:var(--text-faint);font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s;margin-left:4px}
 .check-row:hover .del{opacity:1}
+.check-row .del:hover{color:var(--rose)}
 .check-circle{
-  width:15px;height:15px;border-radius:50%;border:1.5px solid var(--text-dim);flex-shrink:0;
-  cursor:pointer;display:flex;align-items:center;justify-content:center
+  width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(44,34,18,.45);flex-shrink:0;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,background .15s
 }
+.check-circle:hover{border-color:var(--teal)}
 .check-circle.done{background:var(--teal);border-color:var(--teal)}
-.check-circle.done:after{content:'✓';font-size:9px;color:#07130e}
-.check-text{flex:1;font-size:11.5px;outline:none;cursor:text}
+.check-circle.done:after{content:'✓';font-size:9px;color:#f6efdd;font-weight:700}
+.check-text{flex:1;font-size:11.5px;color:var(--ink);outline:none;cursor:text}
 .check-text.done{color:var(--text-faint);text-decoration:line-through}
 .add-check-row{
-  display:flex;align-items:center;gap:8px;padding:8px 10px;color:var(--text-dim);
-  font-size:10.5px;cursor:pointer;border:1px dashed var(--border);border-radius:11px
+  display:flex;align-items:center;gap:8px;padding:9px 11px;color:var(--text-dim);
+  font-size:10.5px;cursor:pointer;border:1px dashed rgba(44,34,18,.3);border-radius:11px;
+  transition:all .15s ease
 }
-.add-check-row:hover{color:var(--text);border-color:var(--text-faint)}
-.quick-add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.add-check-row:hover{color:var(--accent);border-color:rgba(200,69,31,.55);background:rgba(200,69,31,.04)}
+.quick-add-row{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap}
 .quick-add-row .btn-mini-ghost{
-  font-family:var(--font-mono);font-size:9px;color:var(--text-dim);background:rgba(255,255,255,.02);
-  border:1px solid var(--border-soft);border-radius:999px;padding:6px 10px;cursor:pointer
+  font-family:var(--font-mono);font-size:9px;color:var(--text-dim);background:var(--paper);
+  border:1px solid var(--border-soft);border-radius:999px;padding:6px 10px;cursor:pointer;
+  transition:all .15s ease
 }
-.quick-add-row .btn-mini-ghost:hover{color:var(--text);border-color:var(--text-faint);background:rgba(255,255,255,.04)}
+.quick-add-row .btn-mini-ghost:hover{color:var(--accent);border-color:rgba(200,69,31,.5);background:rgba(200,69,31,.05)}
 
 /* Empty state */
 .empty-state{
-  grid-column:1/-1;text-align:center;padding:80px 20px;border:1px dashed var(--border);
-  border-radius:20px;background:rgba(18,23,38,.55)
+  grid-column:1/-1;text-align:center;padding:84px 20px;border:1px dashed rgba(44,34,18,.35);
+  border-radius:20px;background:rgba(253,250,241,.65)
 }
-.empty-state h2{font-family:var(--font-display);font-weight:750;font-size:24px;margin:0 0 8px;color:var(--text)}
-.empty-state p{color:var(--text-dim);font-size:12px;margin:0 0 20px}
+.empty-state h2{font-family:var(--font-display);font-weight:600;font-size:26px;margin:0 0 9px;color:var(--ink)}
+.empty-state p{color:var(--text-dim);font-size:12px;margin:0 0 22px}
 
 /* Modals */
 .overlay{
-  position:fixed;inset:0;background:rgba(5,6,12,.72);backdrop-filter:blur(8px);
+  position:fixed;inset:0;background:rgba(38,29,15,.5);backdrop-filter:blur(5px);
   display:none;align-items:center;justify-content:center;z-index:100;padding:20px
 }
 .overlay.open{display:flex}
 .modal{
-  background:linear-gradient(145deg,rgba(28,34,56,.96),rgba(16,21,35,.98));
-  border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:440px;
-  box-shadow:0 25px 80px rgba(0,0,0,.5)
+  background:var(--paper);border:1px solid var(--ink);border-top:4px solid var(--accent);
+  border-radius:16px;padding:28px;width:100%;max-width:440px;
+  box-shadow:10px 10px 0 rgba(38,29,15,.25)
 }
-.modal h3{font-family:var(--font-display);font-weight:750;font-size:22px;margin:0 0 20px}
+.modal h3{font-family:var(--font-display);font-weight:600;font-size:23px;margin:0 0 20px;color:var(--ink)}
 .field{margin-bottom:16px}
 .field label{
-  display:block;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;
+  display:block;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--text-dim);margin-bottom:7px
 }
 .field input,.field select{
-  width:100%;background:rgba(8,11,20,.65);border:1px solid var(--border);border-radius:10px;
-  padding:11px 13px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none
+  width:100%;background:#fcf8ee;border:1px solid var(--border);border-radius:10px;
+  padding:11px 13px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;
+  transition:border-color .15s,box-shadow .15s
 }
-.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(155,124,255,.09)}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:3px 3px 0 rgba(200,69,31,.22)}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
-::selection{background:rgba(155,124,255,.28)}
-.work-complete{opacity:.7}
-.work-complete:hover{opacity:.92}
-.icon-btn[data-action="move-up"],.icon-btn[data-action="move-down"]{font-size:8px}
+::selection{background:rgba(200,69,31,.28);color:var(--ink)}
+.work-complete{opacity:.68;filter:saturate(.5)}
+.work-complete:hover{opacity:.92;filter:saturate(.9)}
+.icon-btn[data-action="move-up"],.icon-btn[data-action="move-down"]{font-size:9px}
+
+/* Extras */
+::-webkit-scrollbar{width:11px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(44,34,18,.3);border-radius:99px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.btn:focus-visible,.mini-btn:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 @media(max-width:800px){
   .wrap{padding:22px 18px 50px}
@@ -322,8 +373,8 @@ header{
   header{align-items:flex-start}
   .header-right{width:100%}
   .header-right .save-status{order:-1;width:100%;justify-content:center}
-  .work{padding:16px;border-radius:17px}
-  .work-title{font-size:17px}
+  .work{padding:17px;border-radius:16px}
+  .work-title{font-size:19px}
   .trackers{grid-template-columns:1fr}
 }
 </style>
@@ -341,18 +392,13 @@ header{
     </div>
     <div class="header-right">
       <div class="save-status"><span class="save-dot" id="saveDot"></span><span id="saveText">saved</span></div>
-      <button class="btn btn-ghost" id="settingsBtn" title="Account settings">⚙ Account</button>
+      <button class="btn btn-ghost" id="settingsBtn" title="GitHub sync settings">⚙ Sync</button>
       <button class="btn btn-ghost" id="exportBtn" title="Download a backup file">Export</button>
       <button class="btn btn-ghost" id="importBtn" title="Restore from a backup file">Import</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
       <button class="btn btn-primary" id="addWorkBtn">+ Add work</button>
     </div>
   </header>
-
-  <div id="demoBanner" style="display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 16px;border:1px solid rgba(155,124,255,.3);background:rgba(155,124,255,.08);border-radius:12px;margin-bottom:16px;font-size:12.5px;color:var(--text-dim);">
-    <span>You're viewing a <b style="color:var(--text);">demo</b> with sample data — nothing here is saved.</span>
-    <button class="btn btn-primary" id="exitDemoBtn" style="padding:6px 14px;font-size:11.5px;">Sign in for your own tracker</button>
-  </div>
 
   <section class="dashboard-intro" aria-label="Academic dashboard overview">
     <div class="dashboard-copy">
@@ -393,43 +439,47 @@ header{
 
 <div class="overlay" id="connectOverlay">
   <div class="modal">
-    <div id="signinStage">
-      <h3>Sign in</h3>
-      <p style="font-size:12.5px;color:var(--text-dim);margin:-8px 0 18px;line-height:1.55;">
-        Enter your email and I'll send a one-click sign-in link — no password, nothing to copy or remember. Your data follows you to any device you sign in on.
-      </p>
-      <div class="field">
-        <label>Email</label>
-        <input id="emailInput" type="email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div id="connectError" style="display:none;color:var(--rose);font-size:12px;margin-bottom:12px;line-height:1.5;"></div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="sendLinkBtn" style="width:100%;">Send sign-in link</button>
-      </div>
-      <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
-        <button class="btn btn-ghost" id="demoBtn" style="width:100%;">View demo — no sign-in needed</button>
-      </div>
+    <h3>Connect to GitHub</h3>
+    <p style="font-size:12.5px;color:var(--text-dim);margin:-8px 0 18px;line-height:1.55;">
+      Folio stores your data in a private GitHub Gist, so it follows you across devices instead of staying stuck in one browser.
+      Create a <a href="https://github.com/settings/tokens/new?description=Folio&scopes=gist" target="_blank" rel="noopener" style="color:var(--accent);">Personal Access Token</a>
+      with only the <b style="color:var(--text);">gist</b> scope checked, then paste it below.
+    </p>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <input id="ghTokenInput" type="password" placeholder="ghp_..." autocomplete="off">
     </div>
-    <div id="checkEmailStage" style="display:none;text-align:center;padding:10px 0;">
-      <h3>Check your email</h3>
-      <p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;">
-        Sent a sign-in link to <b id="sentToEmail" style="color:var(--text);"></b>. Click it on this device to finish signing in.
-      </p>
-      <button class="btn btn-ghost" id="backToSigninBtn">Use a different email</button>
+    <div class="field">
+      <label>Setup</label>
+      <select id="ghModeSelect">
+        <option value="new">Create a new gist (first device)</option>
+        <option value="existing">Connect to an existing gist (another device)</option>
+      </select>
+    </div>
+    <div class="field" id="ghGistField" style="display:none;">
+      <label>Gist ID</label>
+      <input id="ghGistInput" placeholder="paste the Gist ID from your other device" autocomplete="off">
+    </div>
+    <div id="connectError" style="display:none;color:var(--rose);font-size:12px;margin-bottom:12px;line-height:1.5;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="connectBtn" style="width:100%;">Connect</button>
     </div>
   </div>
 </div>
 
 <div class="overlay" id="settingsOverlay">
   <div class="modal">
-    <h3>Account</h3>
+    <h3>Sync settings</h3>
     <div class="field">
-      <label>Signed in as</label>
-      <input id="accountEmailDisplay" readonly>
+      <label>Gist ID — use this + your token to connect another device</label>
+      <input id="gistIdDisplay" readonly>
     </div>
     <div class="modal-actions" style="justify-content:space-between;">
-      <button class="btn btn-ghost" id="disconnectBtn" style="color:var(--rose);">Sign out</button>
-      <button class="btn btn-primary" id="closeSettingsBtn">Done</button>
+      <button class="btn btn-ghost" id="disconnectBtn" style="color:var(--rose);">Disconnect this device</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="copyGistBtn">Copy ID</button>
+        <button class="btn btn-primary" id="closeSettingsBtn">Done</button>
+      </div>
     </div>
   </div>
 </div>
@@ -482,23 +532,12 @@ header{
     return 'var(--accent)';
   }
 
-  // ---- fill these in after creating your Supabase project (see setup notes) ----
-  const SUPABASE_URL = 'https://uyyvbvjsqhxjuvwfdnxt.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5eXZidmpzcWh4anV2d2Zkbnh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjYwODgsImV4cCI6MjEwNTk0MjA4OH0.Njv4YHUpHLZXaaIpNOo7Lp2uN8Bhpw0D2m6XTYwDU6k';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+  const GH_TOKEN_KEY = 'folio-gh-token';
+  const GH_GIST_KEY = 'folio-gh-gistid';
   const CACHE_KEY = 'folio-cache';
-  const DEMO_KEY = 'folio-demo-mode';
-  let currentUser = null;
-  let isDemo = false;
-
-  const DEMO_WORKS = [
-    { id:'demo-2', category:'TEXTBOOK', title:'An Introduction to Thermal Physics', subtitle:'Daniel V. Schroeder', primary:{ unit:'Chapter', completed:3, total:10, currentLabel:'Chapter 4' },
-      trackers:[], checklist:[ { id:'d2a', text:'Read & understand', done:true }, { id:'d2b', text:'Solve problems', done:false } ],
-      showChecklist:true, createdAt:Date.now(), updatedAt:Date.now() },
-    { id:'demo-3', category:'NOVEL', title:'The Hard Way', subtitle:'Lee Child', primary:{ unit:'Chapter', completed:28, total:49, currentLabel:'Chapter 28' },
-      trackers:[], checklist:[], showChecklist:false, createdAt:Date.now(), updatedAt:Date.now() }
-  ];
+  const GIST_FILENAME = 'folio-data.json';
+  let ghToken = null;
+  let ghGistId = null;
 
   function timeNow(){
     const t = new Date();
@@ -514,85 +553,102 @@ header{
     saveText.textContent = text;
   }
 
+  async function ghRequest(url, options={}){
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'Authorization': 'token ' + ghToken,
+        'Accept': 'application/vnd.github+json',
+        ...(options.headers || {})
+      }
+    });
+    if(!res.ok){
+      const body = await res.text().catch(()=>'');
+      throw new Error('GitHub API ' + res.status + ': ' + body.slice(0,200));
+    }
+    return res.json();
+  }
+
+  async function ghCreateGist(initialWorks){
+    const data = await ghRequest('https://api.github.com/gists', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: 'Folio academic tracker data',
+        public: false,
+        files: { [GIST_FILENAME]: { content: JSON.stringify(initialWorks, null, 2) } }
+      })
+    });
+    return data.id;
+  }
+
+  async function ghGetGist(gistId){
+    const data = await ghRequest('https://api.github.com/gists/' + gistId);
+    const file = data.files && data.files[GIST_FILENAME];
+    if(!file) throw new Error('That gist has no ' + GIST_FILENAME + ' file.');
+    let content = file.content;
+    if(file.truncated){
+      const rawRes = await fetch(file.raw_url);
+      content = await rawRes.text();
+    }
+    return JSON.parse(content || '[]');
+  }
+
+  async function ghUpdateGist(gistId, worksData){
+    await ghRequest('https://api.github.com/gists/' + gistId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        files: { [GIST_FILENAME]: { content: JSON.stringify(worksData, null, 2) } }
+      })
+    });
+  }
+
+  function loadCredentials(){
+    ghToken = localStorage.getItem(GH_TOKEN_KEY) || null;
+    ghGistId = localStorage.getItem(GH_GIST_KEY) || null;
+  }
+
+  function saveCredentials(token, gistId){
+    ghToken = token; ghGistId = gistId;
+    localStorage.setItem(GH_TOKEN_KEY, token);
+    localStorage.setItem(GH_GIST_KEY, gistId);
+  }
+
+  function clearCredentials(){
+    ghToken = null; ghGistId = null;
+    localStorage.removeItem(GH_TOKEN_KEY);
+    localStorage.removeItem(GH_GIST_KEY);
+  }
+
   function showConnectModal(errorMsg){
     document.getElementById('connectOverlay').classList.add('open');
-    document.getElementById('signinStage').style.display = 'block';
-    document.getElementById('checkEmailStage').style.display = 'none';
     const errEl = document.getElementById('connectError');
     if(errorMsg){ errEl.textContent = errorMsg; errEl.style.display = 'block'; }
     else { errEl.style.display = 'none'; }
   }
 
-  function hideConnectModal(){
-    document.getElementById('connectOverlay').classList.remove('open');
-  }
-
-  function enterDemoMode(){
-    isDemo = true;
-    sessionStorage.setItem(DEMO_KEY, '1');
-    works = JSON.parse(JSON.stringify(DEMO_WORKS));
-    document.getElementById('demoBanner').style.display = 'flex';
-    hideConnectModal();
-    setSyncStatus('demo — not saved', false);
-    render();
-  }
-
-  function exitDemoMode(){
-    isDemo = false;
-    sessionStorage.removeItem(DEMO_KEY);
-    document.getElementById('demoBanner').style.display = 'none';
-    works = [];
-    render();
-    showConnectModal();
-  }
-
-  async function loadUserData(){
-    const { data, error } = await sb.from('folio_data').select('data').eq('user_id', currentUser.id).maybeSingle();
-    if(error) throw error;
-    if(!data){
-      await sb.from('folio_data').insert({ user_id: currentUser.id, data: [] });
-      return [];
-    }
-    return data.data || [];
-  }
-
   async function init(){
-    if(sessionStorage.getItem(DEMO_KEY) === '1'){
-      enterDemoMode();
-      return;
-    }
-    const { data: { session } } = await sb.auth.getSession();
-    if(session && session.user){
-      currentUser = session.user;
-      await syncFromSupabase(true);
-    } else {
+    loadCredentials();
+    if(!ghToken || !ghGistId){
+      // show any cached copy immediately while waiting to connect, so nothing looks lost
       try{
         const cached = localStorage.getItem(CACHE_KEY);
         if(cached) works = JSON.parse(cached);
       }catch(e){}
       render();
-      setSyncStatus('not signed in', true);
+      setSyncStatus('not connected', true);
       showConnectModal();
+      return;
     }
+    await syncFromGitHub(true);
   }
 
-  sb.auth.onAuthStateChange(async (event, session)=>{
-    if(event === 'SIGNED_IN' && session && session.user){
-      currentUser = session.user;
-      hideConnectModal();
-      await syncFromSupabase(true);
-    } else if(event === 'SIGNED_OUT'){
-      currentUser = null;
-      works = [];
-      render();
-    }
-  });
-
-  async function syncFromSupabase(initial){
+  async function syncFromGitHub(initial){
     setSyncStatus('connecting…', false);
     saveDot.classList.add('saving');
     try{
-      works = await loadUserData();
+      works = await ghGetGist(ghGistId);
       localStorage.setItem(CACHE_KEY, JSON.stringify(works));
       setSyncStatus('synced · ' + timeNow(), false);
       render();
@@ -604,13 +660,12 @@ header{
         setSyncStatus('offline — showing last synced copy', true);
       } else {
         setSyncStatus('connection failed', true);
-        if(initial) showConnectModal('Could not load your data. Check your connection and try again.');
+        if(initial) showConnectModal('Could not load that gist. Check your token and Gist ID, then try again from Settings.');
       }
     }
   }
 
   function scheduleSave(){
-    if(isDemo){ setSyncStatus('demo — not saved', false); return; }
     saveDot.classList.add('saving');
     saveText.textContent = 'syncing…';
     clearTimeout(saveTimer);
@@ -618,11 +673,10 @@ header{
   }
 
   async function doSave(){
-    if(isDemo) return;
     try{ localStorage.setItem(CACHE_KEY, JSON.stringify(works)); }catch(e){}
-    if(!currentUser){ setSyncStatus('not signed in', true); return; }
+    if(!ghToken || !ghGistId){ setSyncStatus('not connected', true); return; }
     try{
-      await sb.from('folio_data').upsert({ user_id: currentUser.id, data: works, updated_at: new Date().toISOString() });
+      await ghUpdateGist(ghGistId, works);
       setSyncStatus('synced · ' + timeNow(), false);
     }catch(e){
       setSyncStatus('sync failed — will retry on next change', true);
@@ -712,14 +766,13 @@ header{
     if(!el) return;
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    el.textContent = isDemo ? greeting + ' — here\'s a sample workspace.' : greeting + ', Isuru.';
+    el.textContent = greeting + ', Isuru.';
   }
 
   updateDashboardGreeting();
 
   // ---------------- render ----------------
   function render(){
-    updateDashboardGreeting();
     worksEl.innerHTML = '';
     if(works.length===0){
       worksEl.innerHTML = `
@@ -1088,43 +1141,50 @@ header{
     e.target.value = '';
   });
 
-  // ---------------- Supabase sign-in / demo / account ----------------
-  document.getElementById('sendLinkBtn').addEventListener('click', async ()=>{
-    const email = document.getElementById('emailInput').value.trim();
+  // ---------------- GitHub connect / settings ----------------
+  document.getElementById('ghModeSelect').addEventListener('change', e=>{
+    document.getElementById('ghGistField').style.display = e.target.value === 'existing' ? 'block' : 'none';
+  });
+
+  document.getElementById('connectBtn').addEventListener('click', async ()=>{
+    const token = document.getElementById('ghTokenInput').value.trim();
+    const mode = document.getElementById('ghModeSelect').value;
+    const gistIdInput = document.getElementById('ghGistInput').value.trim();
     const errEl = document.getElementById('connectError');
     errEl.style.display = 'none';
-    if(!email || !email.includes('@')){ errEl.textContent = 'Enter a valid email.'; errEl.style.display = 'block'; return; }
+    if(!token){ errEl.textContent = 'Enter a token.'; errEl.style.display = 'block'; return; }
+    if(mode === 'existing' && !gistIdInput){ errEl.textContent = 'Enter the Gist ID from your other device.'; errEl.style.display = 'block'; return; }
 
-    const btn = document.getElementById('sendLinkBtn');
-    btn.disabled = true; btn.textContent = 'Sending…';
+    const btn = document.getElementById('connectBtn');
+    btn.disabled = true; btn.textContent = 'Connecting…';
+    ghToken = token;
     try{
-      const { error } = await sb.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: window.location.href }
-      });
-      if(error) throw error;
-      document.getElementById('sentToEmail').textContent = email;
-      document.getElementById('signinStage').style.display = 'none';
-      document.getElementById('checkEmailStage').style.display = 'block';
+      let gistId, data;
+      if(mode === 'new'){
+        gistId = await ghCreateGist([]);
+        data = [];
+      } else {
+        gistId = gistIdInput;
+        data = await ghGetGist(gistId);
+      }
+      saveCredentials(token, gistId);
+      works = data;
+      localStorage.setItem(CACHE_KEY, JSON.stringify(works));
+      document.getElementById('connectOverlay').classList.remove('open');
+      document.getElementById('ghTokenInput').value = '';
+      setSyncStatus('synced · ' + timeNow(), false);
+      render();
     }catch(e){
-      errEl.textContent = 'Could not send the link — check the email and try again.';
+      ghToken = null;
+      errEl.textContent = 'Could not connect — check your token' + (mode === 'existing' ? ' and Gist ID.' : ', then try again.');
       errEl.style.display = 'block';
     }
-    btn.disabled = false; btn.textContent = 'Send sign-in link';
+    btn.disabled = false; btn.textContent = 'Connect';
   });
-
-  document.getElementById('backToSigninBtn').addEventListener('click', ()=>{
-    document.getElementById('signinStage').style.display = 'block';
-    document.getElementById('checkEmailStage').style.display = 'none';
-  });
-
-  document.getElementById('demoBtn').addEventListener('click', enterDemoMode);
-  document.getElementById('exitDemoBtn').addEventListener('click', exitDemoMode);
 
   document.getElementById('settingsBtn').addEventListener('click', ()=>{
-    if(isDemo){ exitDemoMode(); return; }
-    if(!currentUser){ showConnectModal(); return; }
-    document.getElementById('accountEmailDisplay').value = currentUser.email || '';
+    if(!ghGistId){ showConnectModal(); return; }
+    document.getElementById('gistIdDisplay').value = ghGistId;
     document.getElementById('settingsOverlay').classList.add('open');
   });
   document.getElementById('closeSettingsBtn').addEventListener('click', ()=>{
@@ -1133,13 +1193,22 @@ header{
   document.getElementById('settingsOverlay').addEventListener('click', e=>{
     if(e.target.id === 'settingsOverlay') document.getElementById('settingsOverlay').classList.remove('open');
   });
-  document.getElementById('disconnectBtn').addEventListener('click', async ()=>{
-    if(!confirm('Sign out on this device? Your data stays safe in your account — sign back in anytime with your email.')) return;
-    await sb.auth.signOut();
+  document.getElementById('copyGistBtn').addEventListener('click', ()=>{
+    const el = document.getElementById('gistIdDisplay');
+    el.select();
+    navigator.clipboard?.writeText(el.value).catch(()=>{});
+    const btn = document.getElementById('copyGistBtn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(()=>{ btn.textContent = orig; }, 1200);
+  });
+  document.getElementById('disconnectBtn').addEventListener('click', ()=>{
+    if(!confirm('Disconnect GitHub sync on this device? Your data stays safe in the gist — reconnect anytime with your token and this Gist ID.')) return;
+    clearCredentials();
     works = [];
     document.getElementById('settingsOverlay').classList.remove('open');
     render();
-    setSyncStatus('not signed in', true);
+    setSyncStatus('not connected', true);
     showConnectModal();
   });
 
