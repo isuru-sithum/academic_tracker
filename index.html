@@ -602,10 +602,12 @@ header{
     const { data, error } = await sb.from('folio_data').select('data').eq('user_id', currentUser.id).maybeSingle();
     if(error) throw error;
     if(!data){
-      await sb.from('folio_data').insert({ user_id: currentUser.id, data: [] });
+      const { error: insertError } = await sb.from('folio_data').insert({ user_id: currentUser.id, data: [] });
+      if(insertError) throw insertError;
       return [];
     }
-    return data.data || [];
+    if(!Array.isArray(data.data)) throw new Error('Saved Folio data is invalid.');
+    return data.data;
   }
 
   async function init(){
@@ -674,10 +676,11 @@ header{
     try{ localStorage.setItem(CACHE_KEY, JSON.stringify(works)); }catch(e){}
     if(!currentUser){ setSyncStatus('not signed in', true); return; }
     try{
-      await sb.from('folio_data').upsert({ user_id: currentUser.id, data: works, updated_at: new Date().toISOString() });
+      const { error } = await sb.from('folio_data').upsert({ user_id: currentUser.id, data: works, updated_at: new Date().toISOString() });
+      if(error) throw error;
       setSyncStatus('synced · ' + timeNow(), false);
     }catch(e){
-      setSyncStatus('sync failed — will retry on next change', true);
+      setSyncStatus('sync failed — changes kept locally', true);
     }
   }
 
@@ -692,23 +695,55 @@ header{
     URL.revokeObjectURL(url);
   }
 
+  function validateBackup(data){
+    if(!Array.isArray(data)) throw new Error('Backup must contain an array of works.');
+    data.forEach((w, i)=>{
+      if(!w || typeof w !== 'object' || Array.isArray(w)) throw new Error('Invalid work at item '+(i+1)+'.');
+      if(typeof w.id !== 'string' || !w.id.trim()) throw new Error('Missing work ID at item '+(i+1)+'.');
+      if(typeof w.title !== 'string') throw new Error('Missing work title at item '+(i+1)+'.');
+      if(!Array.isArray(w.trackers) || !Array.isArray(w.checklist)) throw new Error('Invalid tracker/checklist data at item '+(i+1)+'.');
+      if(w.primary !== null && w.primary !== undefined && typeof w.primary !== 'object') throw new Error('Invalid primary tracker at item '+(i+1)+'.');
+      if(w.activityDays !== undefined && (!Array.isArray(w.activityDays) || w.activityDays.some(d=>typeof d !== 'string'))) throw new Error('Invalid activity history at item '+(i+1)+'.');
+    });
+    return data;
+  }
+
   function importBackup(file){
     const reader = new FileReader();
     reader.onload = (e)=>{
       try{
-        const data = JSON.parse(e.target.result);
-        if(!Array.isArray(data)) throw new Error('bad format');
+        const data = validateBackup(JSON.parse(e.target.result));
         if(works.length && !confirm('This will replace your current '+works.length+' item(s) with '+data.length+' from the backup. Continue?')) return;
         works = data;
+        // Preserve older backups by reconstructing at least their last-known activity day.
+        works.forEach(w=>{
+          if(!Array.isArray(w.activityDays)) w.activityDays = [];
+          if(!w.activityDays.length && w.updatedAt){
+            const d = new Date(w.updatedAt);
+            if(!Number.isNaN(d.getTime())) w.activityDays.push(dayKey(d));
+          }
+        });
         scheduleSave(); render();
       }catch(err){
-        alert('Could not read that file as a Folio backup.');
+        alert('Could not import this file. It is not a valid Folio backup.');
       }
     };
     reader.readAsText(file);
   }
 
-  function touch(work){ work.updatedAt = Date.now(); }
+  function dayKey(date){
+    const d = date instanceof Date ? date : new Date(date);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function touch(work){
+    work.updatedAt = Date.now();
+    if(!Array.isArray(work.activityDays)) work.activityDays = [];
+    const today = dayKey(new Date());
+    if(!work.activityDays.includes(today)) work.activityDays.push(today);
+    // Keep a reasonable history while preventing unbounded growth.
+    if(work.activityDays.length > 730) work.activityDays = work.activityDays.slice(-730);
+  }
 
   function findWork(id){ return works.find(w=>w.id===id); }
 
@@ -737,19 +772,20 @@ header{
       inProgress === 1 ? '1 item still being worked on' :
       inProgress + ' items still being worked on';
 
-    // A conservative "study streak": consecutive calendar days represented by
-    // existing updatedAt values. It never writes or changes stored data.
+    // Study streak is based on persistent activity history. Older data falls
+    // back to its last updatedAt value so existing work is not discarded.
     const days = new Set();
     works.forEach(w=>{
-      if(w.updatedAt){
+      if(Array.isArray(w.activityDays)) w.activityDays.forEach(d=>days.add(d));
+      if(w.updatedAt && (!Array.isArray(w.activityDays) || !w.activityDays.length)){
         const d = new Date(w.updatedAt);
-        days.add(d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate());
+        if(!Number.isNaN(d.getTime())) days.add(dayKey(d));
       }
     });
     let streak = 0;
     const cursor = new Date();
     cursor.setHours(0,0,0,0);
-    while(days.has(cursor.getFullYear()+'-'+cursor.getMonth()+'-'+cursor.getDate())){
+    while(days.has(dayKey(cursor))){
       streak++;
       cursor.setDate(cursor.getDate()-1);
     }
@@ -759,12 +795,19 @@ header{
              : 'Start updating your work';
   }
 
+  function getUserDisplayName(){
+    if(!currentUser || !currentUser.email) return 'there';
+    const localPart = currentUser.email.split('@')[0].replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if(!localPart) return 'there';
+    return localPart.split(' ').map(part=>part ? part.charAt(0).toUpperCase()+part.slice(1).toLowerCase() : '').join(' ');
+  }
+
   function updateDashboardGreeting(){
     const el = document.getElementById('dashboardGreeting');
     if(!el) return;
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    el.textContent = isDemo ? greeting + ' — here\'s a sample workspace.' : greeting + ', Isuru.';
+    el.textContent = isDemo ? greeting + ' — here\'s a sample workspace.' : greeting + ', ' + getUserDisplayName() + '.';
   }
 
   updateDashboardGreeting();
@@ -975,7 +1018,7 @@ header{
     wrap.innerHTML = `
       <div class="primary-row">
         <div class="primary-label">Current · <input type="text" value="${escapeAttr(p.currentLabel)}" data-cur></div>
-        <div class="primary-remaining">${remaining} ${p.unit.toLowerCase()}${remaining===1?'':'s'} remaining</div>
+        <div class="primary-remaining">${remaining} ${escapeHtml(String(p.unit||'item').toLowerCase())}${remaining===1?'':'s'} remaining</div>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
       <div class="primary-foot">
