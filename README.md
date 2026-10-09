@@ -2,7 +2,7 @@
 
 A personal academic progress tracker. Log courses, textbooks, papers, and novels in one place, track progress with counters, chapter/page trackers, and checklists, and pick up exactly where you left off — on any device.
 
-**Live site:** https://academic-tracker-lyart.vercel.app
+**Live site:** https://folio-academic-tracker.vercel.app/
 
 No account needed to look around — click **View demo** on the sign-in screen for a walkthrough with sample data.
 
