@@ -479,9 +479,18 @@ header{
       <label>Signed in as</label>
       <input id="accountEmailDisplay" readonly>
     </div>
+    <div class="field">
+      <label>Display name</label>
+      <input id="accountUsernameInput" placeholder="e.g. Isuru" maxlength="60" autocomplete="off">
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.5;">Used in your greeting, on this account, across every device. Leave blank to use your email instead.</div>
+      <div id="usernameSaveMsg" style="display:none;font-size:11.5px;margin-top:8px;line-height:1.5;"></div>
+    </div>
     <div class="modal-actions" style="justify-content:space-between;">
       <button class="btn btn-ghost" id="disconnectBtn" style="color:var(--rose);">Sign out</button>
-      <button class="btn btn-primary" id="closeSettingsBtn">Done</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" id="saveUsernameBtn">Save name</button>
+        <button class="btn btn-primary" id="closeSettingsBtn">Done</button>
+      </div>
     </div>
   </div>
 </div>
@@ -540,9 +549,11 @@ header{
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const CACHE_KEY = 'folio-cache';
+  const USERNAME_CACHE_KEY = 'folio-username-cache';
   const DEMO_KEY = 'folio-demo-mode';
   let currentUser = null;
   let isDemo = false;
+  let currentUsername = '';
 
   const DEMO_WORKS = [
     { id:'demo-2', category:'TEXTBOOK', title:'An Introduction to Thermal Physics', subtitle:'Daniel V. Schroeder', primary:{ unit:'Chapter', completed:3, total:10, currentLabel:'Chapter 4' },
@@ -599,14 +610,16 @@ header{
   }
 
   async function loadUserData(){
-    const { data, error } = await sb.from('folio_data').select('data').eq('user_id', currentUser.id).maybeSingle();
+    const { data, error } = await sb.from('folio_data').select('data, username').eq('user_id', currentUser.id).maybeSingle();
     if(error) throw error;
     if(!data){
       const { error: insertError } = await sb.from('folio_data').insert({ user_id: currentUser.id, data: [] });
       if(insertError) throw insertError;
+      currentUsername = '';
       return [];
     }
     if(!Array.isArray(data.data)) throw new Error('Saved Folio data is invalid.');
+    currentUsername = (data.username || '').trim();
     return data.data;
   }
 
@@ -637,6 +650,8 @@ header{
       await syncFromSupabase(true);
     } else if(event === 'SIGNED_OUT'){
       currentUser = null;
+      currentUsername = '';
+      localStorage.removeItem(USERNAME_CACHE_KEY);
       works = [];
       render();
     }
@@ -648,12 +663,15 @@ header{
     try{
       works = await loadUserData();
       localStorage.setItem(CACHE_KEY, JSON.stringify(works));
+      localStorage.setItem(USERNAME_CACHE_KEY, currentUsername);
       setSyncStatus('synced · ' + timeNow(), false);
       render();
     }catch(e){
       const cached = localStorage.getItem(CACHE_KEY);
       if(cached){
         works = JSON.parse(cached);
+        const cachedName = localStorage.getItem(USERNAME_CACHE_KEY);
+        if(cachedName) currentUsername = cachedName;
         render();
         setSyncStatus('offline — showing last synced copy', true);
       } else {
@@ -796,6 +814,7 @@ header{
   }
 
   function getUserDisplayName(){
+    if(currentUsername) return currentUsername;
     if(!currentUser || !currentUser.email) return 'there';
     const localPart = currentUser.email.split('@')[0].replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
     if(!localPart) return 'there';
@@ -1220,7 +1239,38 @@ header{
     if(isDemo){ exitDemoMode(); return; }
     if(!currentUser){ showConnectModal(); return; }
     document.getElementById('accountEmailDisplay').value = currentUser.email || '';
+    document.getElementById('accountUsernameInput').value = currentUsername || '';
+    document.getElementById('usernameSaveMsg').style.display = 'none';
     document.getElementById('settingsOverlay').classList.add('open');
+  });
+  document.getElementById('saveUsernameBtn').addEventListener('click', async ()=>{
+    if(!currentUser) return;
+    const btn = document.getElementById('saveUsernameBtn');
+    const msgEl = document.getElementById('usernameSaveMsg');
+    const raw = document.getElementById('accountUsernameInput').value.trim();
+    if(raw.length > 60){
+      msgEl.textContent = 'Keep it under 60 characters.';
+      msgEl.style.color = 'var(--rose)';
+      msgEl.style.display = 'block';
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try{
+      const { error } = await sb.from('folio_data').update({ username: raw || null }).eq('user_id', currentUser.id);
+      if(error) throw error;
+      currentUsername = raw;
+      localStorage.setItem(USERNAME_CACHE_KEY, currentUsername);
+      document.getElementById('accountUsernameInput').value = currentUsername;
+      updateDashboardGreeting();
+      msgEl.textContent = 'Saved.';
+      msgEl.style.color = 'var(--teal)';
+      msgEl.style.display = 'block';
+    }catch(e){
+      msgEl.textContent = 'Could not save — check your connection and try again.';
+      msgEl.style.color = 'var(--rose)';
+      msgEl.style.display = 'block';
+    }
+    btn.disabled = false; btn.textContent = 'Save name';
   });
   document.getElementById('closeSettingsBtn').addEventListener('click', ()=>{
     document.getElementById('settingsOverlay').classList.remove('open');
@@ -1232,6 +1282,8 @@ header{
     if(!confirm('Sign out on this device? Your data stays safe in your account — sign back in anytime with your email.')) return;
     await sb.auth.signOut();
     works = [];
+    currentUsername = '';
+    localStorage.removeItem(USERNAME_CACHE_KEY);
     document.getElementById('settingsOverlay').classList.remove('open');
     render();
     setSyncStatus('not signed in', true);
