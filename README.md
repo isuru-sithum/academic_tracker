@@ -48,7 +48,7 @@ A single static HTML/CSS/JS file — no build step, no framework, no server code
    create policy "update own" on folio_data for update using (auth.uid() = user_id);
    ```
 
-3. In `index.html`, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (found under **Project Settings → API**) to your own project's values.
+3. In `assets/js/app.js`, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (found under **Project Settings → API**) to your own project's values.
 4. In Supabase, under **Authentication → URL Configuration**, set the Site URL and Redirect URLs to wherever you deploy this.
 5. Deploy the file as a static site — Vercel, Netlify, GitHub Pages, or any static host will work.
 
